@@ -1,10 +1,14 @@
 package org.experience.k.springboot;
 
+import org.experience.k.springboot.config.auth.SecurityConfig;
 import org.experience.k.springboot.web.HelloController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -22,12 +26,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //Web에 집중할 수 있는 어노테이션
 //@Controller, @ControllerAdivce 등을 사용 가능
 //@Service, @Component, @Repository 등은 사용할 수 없다.
-@WebMvcTest(controllers = HelloController.class)
+@WebMvcTest(controllers = HelloController.class,
+            excludeFilters = {
+                    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class)
+            })
 public class HelloControllerTest {
     
     @Autowired // 스프링이 관리하는 Bean을 주입 받는다.
     private MockMvc mvc; // 웹 API를 테스트할 때 사용, 스프링 MVC 테스트 시작점, HTTP GET, Post 등에 대한 API 테스트 가능
 
+    @WithMockUser(roles = "USER")
     @Test
     public void helloReturn() throws Exception {
         String hello = "test";
@@ -40,6 +48,7 @@ public class HelloControllerTest {
                 .andExpect(content().string(hello));
     }
 
+    @WithMockUser(roles = "USER")
     @Test
     public void helloDtoReturn() throws Exception {
         String name = "hello";
